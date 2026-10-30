@@ -137,15 +137,16 @@ public class ColectivoTests
     }
 
     [Test]
-    public void PagarCon_SinSaldoSuficiente_DevuelveNull()
+    public void PagarCon_ConSaldoEnElLimiteNegativo_DevuelveNull()
     {
         var tarjeta = new Tarjeta();
-        var colectivo = new Colectivo("Línea 102");
+        tarjeta.Descontar(2000m);
 
+        var colectivo = new Colectivo("Línea 102");
         var boleto = colectivo.PagarCon(tarjeta);
 
         Assert.That(boleto, Is.Null);
-        Assert.That(tarjeta.Saldo, Is.EqualTo(0m));
+        Assert.That(tarjeta.Saldo, Is.EqualTo(-2000m));
     }
 
     [Test]
@@ -169,5 +170,17 @@ public class ColectivoTests
         Assert.That(recuperado, Is.Not.Null);
         Assert.That(recuperado!.Linea, Is.EqualTo("Línea 102"));
         Assert.That(recuperado.Tarifa, Is.EqualTo(1580m));
+    }
+
+    [Test]
+    public void PagarCon_SinSaldoPeroDentroDelLimite_PuedeViajar()
+    {
+        var tarjeta = new Tarjeta();
+        var colectivo = new Colectivo("Línea 102");
+
+        var boleto = colectivo.PagarCon(tarjeta);
+
+        Assert.That(boleto, Is.Not.Null);
+        Assert.That(tarjeta.Saldo, Is.EqualTo(-1580m));
     }
 }
