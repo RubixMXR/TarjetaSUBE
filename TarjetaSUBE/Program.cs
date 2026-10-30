@@ -21,13 +21,13 @@ Console.WriteLine();
 
 Console.WriteLine("--- Primer viaje ---");
 var boleto1 = colectivo102.PagarCon(tarjeta);
-Console.WriteLine($"Boleto 1: {boleto1.Colectivo!.Linea} - ${boleto1.Monto} - {boleto1.Fecha}");
+Console.WriteLine($"Boleto 1: {boleto1!.Colectivo!.Linea} - ${boleto1.Monto} - {boleto1.Fecha}");
 Console.WriteLine($"Saldo restante: ${tarjeta.Saldo}");
 Console.WriteLine();
 
 Console.WriteLine("--- Segundo viaje ---");
 var boleto2 = colectivoK.PagarCon(tarjeta);
-Console.WriteLine($"Boleto 2: {boleto2.Colectivo!.Linea} - ${boleto2.Monto} - {boleto2.Fecha}");
+Console.WriteLine($"Boleto 2: {boleto2!.Colectivo!.Linea} - ${boleto2.Monto} - {boleto2.Fecha}");
 Console.WriteLine($"Saldo restante: ${tarjeta.Saldo}");
 Console.WriteLine();
 
