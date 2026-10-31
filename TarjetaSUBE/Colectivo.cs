@@ -43,19 +43,30 @@ public class Colectivo
         if (tarjeta is null)
             throw new ArgumentNullException(nameof(tarjeta));
 
-        var monto = CalcularMonto(tarjeta);
+        var montoBase = CalcularMonto(tarjeta);
 
-        if (monto > 0 && !tarjeta.PuedeDescontar(monto))
+        if (montoBase > 0 && !tarjeta.PuedeDescontar(montoBase))
             return null;
 
-        if (monto > 0)
-            tarjeta.Descontar(monto);
+        var saldoAnterior = tarjeta.Saldo;
+
+        if (montoBase > 0)
+            tarjeta.Descontar(montoBase);
+
+        var totalAbonado = montoBase;
+
+        if (montoBase > 0 && saldoAnterior < 0)
+        {
+            totalAbonado += Math.Abs(saldoAnterior);
+        }
 
         return new Boleto
         {
             Tarjeta = tarjeta,
             Colectivo = this,
-            Monto = monto,
+            Monto = montoBase,
+            SaldoRestante = tarjeta.Saldo,
+            TotalAbonado = totalAbonado,
             Fecha = DateTime.Now
         };
     }
