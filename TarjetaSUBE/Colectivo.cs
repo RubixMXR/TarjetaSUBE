@@ -38,12 +38,31 @@ public class Colectivo
         Linea = linea;
     }
 
-    public Boleto? PagarCon(Tarjeta tarjeta)
+    public Boleto? PagarCon(Tarjeta tarjeta, DateTime? fechaSimulada = null)
     {
         if (tarjeta is null)
             throw new ArgumentNullException(nameof(tarjeta));
 
-        var montoBase = CalcularMonto(tarjeta);
+        var fechaActual = fechaSimulada ?? DateTime.Now;
+        var esMedioBoleto = tarjeta.Tipo?.Nombre == "MedioBoletoEstudiantil";
+        var coeficiente = tarjeta.Tipo?.Coeficiente ?? 1m;
+
+        if (esMedioBoleto)
+        {
+            var ultimoViaje = tarjeta.Boletos.OrderByDescending(b => b.Fecha).FirstOrDefault();
+            if (ultimoViaje != null && (fechaActual - ultimoViaje.Fecha).TotalMinutes < 5)
+            {
+                return null;
+            }
+
+            var viajesHoy = tarjeta.Boletos.Count(b => b.Fecha.Date == fechaActual.Date);
+            if (viajesHoy >= 2)
+            {
+                coeficiente = 1m;
+            }
+        }
+
+        var montoBase = _tarifa * coeficiente;
 
         if (montoBase > 0 && !tarjeta.PuedeDescontar(montoBase))
             return null;
@@ -60,20 +79,20 @@ public class Colectivo
             totalAbonado += Math.Abs(saldoAnterior);
         }
 
-        return new Boleto
+        var boleto = new Boleto
         {
             Tarjeta = tarjeta,
+            TarjetaId = tarjeta.Id,
+            TipoTarjeta = tarjeta.Tipo?.Nombre ?? "Normal",
             Colectivo = this,
             Monto = montoBase,
             SaldoRestante = tarjeta.Saldo,
             TotalAbonado = totalAbonado,
-            Fecha = DateTime.Now
+            Fecha = fechaActual
         };
-    }
 
-    private decimal CalcularMonto(Tarjeta tarjeta)
-    {
-        var coeficiente = tarjeta.Tipo?.Coeficiente ?? 1m;
-        return _tarifa * coeficiente;
+        tarjeta.Boletos.Add(boleto);
+
+        return boleto;
     }
 }

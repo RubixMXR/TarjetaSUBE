@@ -6,9 +6,13 @@ public class Boleto
 
     public int Id { get; set; }
 
+    public int TarjetaId { get; set; }
+
     public Tarjeta? Tarjeta { get; set; }
 
     public Colectivo? Colectivo { get; set; }
+
+    public string TipoTarjeta { get; set; } = string.Empty;
 
     public decimal Monto
     {
@@ -30,7 +34,7 @@ public class Boleto
 
     public string ObtenerTipoTarjeta()
     {
-        return Tarjeta?.Tipo?.Nombre ?? "Normal";
+        return TipoTarjeta;
     }
 
     public string ObtenerLineaColectivo()
@@ -40,6 +44,6 @@ public class Boleto
 
     public int ObtenerTarjetaId()
     {
-        return Tarjeta?.Id ?? 0;
+        return TarjetaId;
     }
 }
