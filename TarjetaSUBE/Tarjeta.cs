@@ -50,4 +50,9 @@ public class Tarjeta
 
         _saldo -= monto;
     }
+
+    public bool PuedeDescontar(decimal monto)
+    {
+        return monto > 0 && monto <= _saldo;
+    }
 }

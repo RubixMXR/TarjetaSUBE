@@ -38,10 +38,13 @@ public class Colectivo
         Linea = linea;
     }
 
-    public Boleto PagarCon(Tarjeta tarjeta)
+    public Boleto? PagarCon(Tarjeta tarjeta)
     {
         if (tarjeta is null)
             throw new ArgumentNullException(nameof(tarjeta));
+
+        if (!tarjeta.PuedeDescontar(_tarifa))
+            return null;
 
         tarjeta.Descontar(_tarifa);
 
