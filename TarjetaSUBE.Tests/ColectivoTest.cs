@@ -183,4 +183,51 @@ public class ColectivoTests
         Assert.That(boleto, Is.Not.Null);
         Assert.That(tarjeta.Saldo, Is.EqualTo(-1580m));
     }
+
+    [Test]
+    public void PagarCon_ConMedioBoleto_PagaLaMitadDeLaTarifa()
+    {
+        var tarjetaNormal = new Tarjeta { Tipo = new TarjetaTipo("Normal", 1m) };
+        tarjetaNormal.Cargar(5000m);
+
+        var tarjetaMedio = new Tarjeta { Tipo = new TarjetaTipo("MedioBoletoEstudiantil", 0.5m) };
+        tarjetaMedio.Cargar(5000m);
+
+        var colectivo = new Colectivo("Línea 102");
+
+        var boletoNormal = colectivo.PagarCon(tarjetaNormal);
+        var boletoMedio = colectivo.PagarCon(tarjetaMedio);
+
+        Assert.That(boletoNormal, Is.Not.Null);
+        Assert.That(boletoMedio, Is.Not.Null);
+        Assert.That(boletoNormal!.Monto, Is.EqualTo(1580m));
+        Assert.That(boletoMedio!.Monto, Is.EqualTo(790m));
+    }
+
+    [Test]
+    public void PagarCon_ConFranquiciaCompleta_SiemprePuedePagar()
+    {
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("FranquiciaCompleta", 0m) };
+        var colectivo = new Colectivo("Línea 102");
+
+        var boleto = colectivo.PagarCon(tarjeta);
+
+        Assert.That(boleto, Is.Not.Null);
+        Assert.That(boleto!.Monto, Is.EqualTo(0m));
+        Assert.That(tarjeta.Saldo, Is.EqualTo(0m));
+    }
+
+    [Test]
+    public void PagarCon_ConBoletoGratuitoEstudiantil_PagaCero()
+    {
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("BoletoGratuitoEstudiantil", 0m) };
+        tarjeta.Cargar(2000m);
+        var colectivo = new Colectivo("Línea 102");
+
+        var boleto = colectivo.PagarCon(tarjeta);
+
+        Assert.That(boleto, Is.Not.Null);
+        Assert.That(boleto!.Monto, Is.EqualTo(0m));
+        Assert.That(tarjeta.Saldo, Is.EqualTo(2000m));
+    }
 }

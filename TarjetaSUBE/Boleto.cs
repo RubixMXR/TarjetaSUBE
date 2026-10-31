@@ -15,8 +15,8 @@ public class Boleto
         get => _monto;
         set
         {
-            if (value <= 0)
-                throw new ArgumentException("El monto del boleto debe ser mayor que cero.");
+            if (value < 0)
+                throw new ArgumentException("El monto del boleto no puede ser negativo.");
 
             _monto = value;
         }
