@@ -43,17 +43,26 @@ public class Colectivo
         if (tarjeta is null)
             throw new ArgumentNullException(nameof(tarjeta));
 
-        if (!tarjeta.PuedeDescontar(_tarifa))
+        var monto = CalcularMonto(tarjeta);
+
+        if (monto > 0 && !tarjeta.PuedeDescontar(monto))
             return null;
 
-        tarjeta.Descontar(_tarifa);
+        if (monto > 0)
+            tarjeta.Descontar(monto);
 
         return new Boleto
         {
             Tarjeta = tarjeta,
             Colectivo = this,
-            Monto = _tarifa,
+            Monto = monto,
             Fecha = DateTime.Now
         };
+    }
+
+    private decimal CalcularMonto(Tarjeta tarjeta)
+    {
+        var coeficiente = tarjeta.Tipo?.Coeficiente ?? 1m;
+        return _tarifa * coeficiente;
     }
 }

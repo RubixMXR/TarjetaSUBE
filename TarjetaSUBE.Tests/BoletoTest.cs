@@ -39,10 +39,10 @@ public class BoletoTests
     }
 
     [Test]
-    public void BoletoConMontoCero_LanzaExcepcion()
+    public void BoletoConMontoCero_EsValido()
     {
-        Assert.That(() => new Boleto { Monto = 0m },
-            Throws.TypeOf<ArgumentException>());
+        var boleto = new Boleto { Monto = 0m };
+        Assert.That(boleto.Monto, Is.EqualTo(0m));
     }
 
     [Test]

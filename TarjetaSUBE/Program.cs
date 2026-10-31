@@ -31,6 +31,8 @@ Console.WriteLine($"Boleto 2: {boleto2!.Colectivo!.Linea} - ${boleto2.Monto} - {
 Console.WriteLine($"Saldo restante: ${tarjeta.Saldo}");
 Console.WriteLine();
 
+tarjeta.Tipo = new TarjetaTipo("Normal", 1m);
+
 db.Tarjetas.Add(tarjeta);
 db.Colectivos.Add(colectivo102);
 db.Colectivos.Add(colectivoK);
