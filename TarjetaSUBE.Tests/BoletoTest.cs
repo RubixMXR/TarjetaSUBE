@@ -61,6 +61,71 @@ public class BoletoTests
     }
 
     [Test]
+    public void Boleto_ExponeCorrectamenteLosDatosDelViaje()
+    {
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("Normal", 1m) };
+        tarjeta.Cargar(5000m);
+        var colectivo = new Colectivo("Línea 102");
+
+        _db.Tarjetas.Add(tarjeta);
+        _db.Colectivos.Add(colectivo);
+        _db.SaveChanges();
+
+        var boleto = colectivo.PagarCon(tarjeta);
+        _db.Boletos.Add(boleto!);
+        _db.SaveChanges();
+
+        Assert.That(boleto!.ObtenerTipoTarjeta(), Is.EqualTo("Normal"));
+        Assert.That(boleto.ObtenerLineaColectivo(), Is.EqualTo("Línea 102"));
+        Assert.That(boleto.ObtenerTarjetaId(), Is.EqualTo(tarjeta.Id));
+        Assert.That(boleto.SaldoRestante, Is.EqualTo(3420m));
+        Assert.That(boleto.TotalAbonado, Is.EqualTo(1580m));
+    }
+
+    [Test]
+    public void Boleto_TipoTarjetaMedioBoleto_DevuelveNombreCorrecto()
+    {
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("MedioBoletoEstudiantil", 0.5m) };
+        tarjeta.Cargar(5000m);
+        var colectivo = new Colectivo("Línea 102");
+
+        var boleto = colectivo.PagarCon(tarjeta);
+
+        Assert.That(boleto!.ObtenerTipoTarjeta(), Is.EqualTo("MedioBoletoEstudiantil"));
+        Assert.That(boleto.Monto, Is.EqualTo(790m));
+    }
+
+    [Test]
+    public void Boleto_ConSaldoNegativo_InformaTotalAbonadoSuperior()
+    {
+        var tarjeta = new Tarjeta();
+        tarjeta.Descontar(400m);
+        var colectivo = new Colectivo("Línea 102");
+
+        var boleto = colectivo.PagarCon(tarjeta);
+
+        Assert.That(boleto, Is.Not.Null);
+        Assert.That(boleto!.Monto, Is.EqualTo(1580m));
+        Assert.That(boleto.SaldoRestante, Is.EqualTo(-1980m));
+        Assert.That(boleto.TotalAbonado, Is.EqualTo(1980m));
+    }
+
+    [Test]
+    public void Boleto_ConTarjetaGratuita_TotalAbonadoEsCero()
+    {
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("FranquiciaCompleta", 0m) };
+        tarjeta.Descontar(1000m);
+        var colectivo = new Colectivo("Línea 102");
+
+        var boleto = colectivo.PagarCon(tarjeta);
+
+        Assert.That(boleto, Is.Not.Null);
+        Assert.That(boleto!.Monto, Is.EqualTo(0m));
+        Assert.That(boleto.SaldoRestante, Is.EqualTo(-1000m));
+        Assert.That(boleto.TotalAbonado, Is.EqualTo(0m));
+    }
+
+    [Test]
     public void Boleto_SePersisteYSeRecuperaDeLaBase()
     {
         var tarjeta = new Tarjeta();
@@ -81,6 +146,8 @@ public class BoletoTests
 
         Assert.That(recuperado, Is.Not.Null);
         Assert.That(recuperado!.Monto, Is.EqualTo(1580m));
+        Assert.That(recuperado.SaldoRestante, Is.EqualTo(3420m));
+        Assert.That(recuperado.TotalAbonado, Is.EqualTo(1580m));
     }
 
     [Test]

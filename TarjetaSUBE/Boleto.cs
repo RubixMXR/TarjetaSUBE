@@ -22,5 +22,24 @@ public class Boleto
         }
     }
 
+    public decimal SaldoRestante { get; set; }
+
+    public decimal TotalAbonado { get; set; }
+
     public DateTime Fecha { get; set; }
+
+    public string ObtenerTipoTarjeta()
+    {
+        return Tarjeta?.Tipo?.Nombre ?? "Normal";
+    }
+
+    public string ObtenerLineaColectivo()
+    {
+        return Colectivo?.Linea ?? string.Empty;
+    }
+
+    public int ObtenerTarjetaId()
+    {
+        return Tarjeta?.Id ?? 0;
+    }
 }
