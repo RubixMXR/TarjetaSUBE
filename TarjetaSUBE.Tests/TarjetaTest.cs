@@ -127,20 +127,21 @@ public class TarjetaTests
     }
 
     [Test]
-    public void Descontar_SinSaldo_LanzaExcepcion()
+    public void Descontar_SuperaElLimiteNegativo_LanzaExcepcion()
     {
         var tarjeta = new Tarjeta();
-        Assert.That(() => tarjeta.Descontar(1580m),
+
+        Assert.That(() => tarjeta.Descontar(2001m),
             Throws.TypeOf<InvalidOperationException>());
     }
 
     [Test]
-    public void Descontar_MontoMayorAlSaldo_LanzaExcepcion()
+    public void Descontar_MontoQueSuperaElLimiteNegativo_LanzaExcepcion()
     {
         var tarjeta = new Tarjeta();
         tarjeta.Cargar(2000m);
 
-        Assert.That(() => tarjeta.Descontar(3000m),
+        Assert.That(() => tarjeta.Descontar(4001m),
             Throws.TypeOf<InvalidOperationException>());
     }
 
@@ -177,5 +178,29 @@ public class TarjetaTests
 
         Assert.That(recuperada, Is.Not.Null);
         Assert.That(recuperada!.Saldo, Is.EqualTo(5000m));
+    }
+
+    [Test]
+    public void Descontar_NoPuedeSuperarElLimiteNegativo()
+    {
+        var tarjeta = new Tarjeta();
+        tarjeta.Descontar(2000m);
+
+        Assert.That(() => tarjeta.Descontar(0.01m),
+            Throws.TypeOf<InvalidOperationException>());
+        Assert.That(tarjeta.Saldo, Is.EqualTo(-2000m));
+    }
+
+    [Test]
+    public void Cargar_DescuentaElSaldoConsumidoEnViajesPlus()
+    {
+        var tarjeta = new Tarjeta();
+        var colectivo = new Colectivo("Línea 102");
+
+        colectivo.PagarCon(tarjeta);
+        Assert.That(tarjeta.Saldo, Is.EqualTo(-1580m));
+
+        tarjeta.Cargar(3000m);
+        Assert.That(tarjeta.Saldo, Is.EqualTo(1420m));
     }
 }

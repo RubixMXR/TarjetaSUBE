@@ -10,6 +10,8 @@ public class Tarjeta
 
     public const decimal LimiteSaldo = 40000m;
 
+    public const decimal LimiteNegativo = -2000m;
+
     public static readonly IReadOnlyList<decimal> CargasAceptadas = new List<decimal>
     {
         2000m, 3000m, 4000m, 5000m, 8000m,
@@ -45,7 +47,7 @@ public class Tarjeta
         if (monto <= 0)
             throw new ArgumentException("El monto a descontar debe ser mayor que cero.");
 
-        if (monto > _saldo)
+        if (_saldo - monto < LimiteNegativo)
             throw new InvalidOperationException("Saldo insuficiente.");
 
         _saldo -= monto;
@@ -53,6 +55,6 @@ public class Tarjeta
 
     public bool PuedeDescontar(decimal monto)
     {
-        return monto > 0 && monto <= _saldo;
+        return monto > 0 && _saldo - monto >= LimiteNegativo;
     }
 }
