@@ -148,6 +148,7 @@ public class BoletoTests
         Assert.That(recuperado!.Monto, Is.EqualTo(1580m));
         Assert.That(recuperado.SaldoRestante, Is.EqualTo(3420m));
         Assert.That(recuperado.TotalAbonado, Is.EqualTo(1580m));
+        Assert.That(recuperado.TarjetaId, Is.EqualTo(tarjeta.Id));
     }
 
     [Test]

@@ -230,4 +230,66 @@ public class ColectivoTests
         Assert.That(boleto!.Monto, Is.EqualTo(0m));
         Assert.That(tarjeta.Saldo, Is.EqualTo(2000m));
     }
+
+    [Test]
+    public void PagarCon_MedioBoleto_AntesDe5Minutos_DevuelveNull()
+    {
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("MedioBoletoEstudiantil", 0.5m) };
+        tarjeta.Cargar(5000m);
+        var colectivo = new Colectivo("Línea 102");
+        var fecha = new DateTime(2026, 10, 31, 10, 0, 0);
+
+        var primerBoleto = colectivo.PagarCon(tarjeta, fecha);
+        Assert.That(primerBoleto, Is.Not.Null);
+
+        var segundoBoleto = colectivo.PagarCon(tarjeta, fecha.AddMinutes(4));
+        Assert.That(segundoBoleto, Is.Null);
+    }
+
+    [Test]
+    public void PagarCon_MedioBoleto_DespuesDe5Minutos_PermiteViajar()
+    {
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("MedioBoletoEstudiantil", 0.5m) };
+        tarjeta.Cargar(5000m);
+        var colectivo = new Colectivo("Línea 102");
+        var fecha = new DateTime(2026, 10, 31, 10, 0, 0);
+
+        colectivo.PagarCon(tarjeta, fecha);
+
+        var segundoBoleto = colectivo.PagarCon(tarjeta, fecha.AddMinutes(5));
+        Assert.That(segundoBoleto, Is.Not.Null);
+    }
+
+    [Test]
+    public void PagarCon_MedioBoleto_TercerViajeEnElDia_NoAplicaDescuento()
+    {
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("MedioBoletoEstudiantil", 0.5m) };
+        tarjeta.Cargar(5000m);
+        var colectivo = new Colectivo("Línea 102");
+        var fecha = new DateTime(2026, 10, 31, 10, 0, 0);
+
+        var boleto1 = colectivo.PagarCon(tarjeta, fecha);
+        var boleto2 = colectivo.PagarCon(tarjeta, fecha.AddMinutes(6));
+        var boleto3 = colectivo.PagarCon(tarjeta, fecha.AddMinutes(12));
+
+        Assert.That(boleto1!.Monto, Is.EqualTo(790m));
+        Assert.That(boleto2!.Monto, Is.EqualTo(790m));
+        Assert.That(boleto3!.Monto, Is.EqualTo(1580m));
+    }
+
+    [Test]
+    public void PagarCon_MedioBoleto_DiaSiguiente_ReseteaContadorYPagaMitad()
+    {
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("MedioBoletoEstudiantil", 0.5m) };
+        tarjeta.Cargar(10000m);
+        var colectivo = new Colectivo("Línea 102");
+        var fecha = new DateTime(2026, 10, 31, 10, 0, 0);
+
+        colectivo.PagarCon(tarjeta, fecha);
+        colectivo.PagarCon(tarjeta, fecha.AddMinutes(6));
+
+        var boletoDiaSiguiente = colectivo.PagarCon(tarjeta, fecha.AddDays(1));
+
+        Assert.That(boletoDiaSiguiente!.Monto, Is.EqualTo(790m));
+    }
 }

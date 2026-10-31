@@ -10,6 +10,8 @@ public class Tarjeta
 
     public TarjetaTipo? Tipo { get; set; }
 
+    public List<Boleto> Boletos { get; set; } = new();
+
     public decimal Saldo => _saldo;
 
     public const decimal LimiteSaldo = 40000m;
