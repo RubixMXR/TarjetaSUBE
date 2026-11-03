@@ -48,7 +48,7 @@ public class TarjetaTests
     [Test]
     public void TarjetaConSaldoInicialMayorAlLimite_LanzaExcepcion()
     {
-        Assert.That(() => new Tarjeta(50000m),
+        Assert.That(() => new Tarjeta(60000m),
             Throws.TypeOf<ArgumentException>());
     }
 
@@ -95,13 +95,14 @@ public class TarjetaTests
     }
 
     [Test]
-    public void Cargar_NoSuperaElLimiteDeSaldo()
+    public void Cargar_QueSuperaElLimite_AcreditaHastaElMaximoYDejaPendiente()
     {
         var tarjeta = new Tarjeta();
         tarjeta.Cargar(30000m);
+        tarjeta.Cargar(30000m);
 
-        Assert.That(() => tarjeta.Cargar(15000m),
-            Throws.TypeOf<InvalidOperationException>());
+        Assert.That(tarjeta.Saldo, Is.EqualTo(56000m));
+        Assert.That(tarjeta.SaldoPendiente, Is.EqualTo(4000m));
     }
 
     [Test]
@@ -202,5 +203,30 @@ public class TarjetaTests
 
         tarjeta.Cargar(3000m);
         Assert.That(tarjeta.Saldo, Is.EqualTo(1420m));
+    }
+
+    [Test]
+    public void Cargar_QueSuperaElMaximo_DejaElExcedentePendiente()
+    {
+        var tarjeta = new Tarjeta();
+        tarjeta.Cargar(30000m);
+        tarjeta.Cargar(30000m);
+
+        Assert.That(tarjeta.Saldo, Is.EqualTo(56000m));
+        Assert.That(tarjeta.SaldoPendiente, Is.EqualTo(4000m));
+    }
+
+    [Test]
+    public void Descontar_ConSaldoPendiente_ReactivaLaCargaHastaElMaximo()
+    {
+        var tarjeta = new Tarjeta();
+        tarjeta.Cargar(30000m);
+        tarjeta.Cargar(30000m);
+
+        var colectivo = new Colectivo("Línea 102");
+        colectivo.PagarCon(tarjeta);
+
+        Assert.That(tarjeta.Saldo, Is.EqualTo(56000m));
+        Assert.That(tarjeta.SaldoPendiente, Is.EqualTo(2420m));
     }
 }
