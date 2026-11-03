@@ -78,8 +78,8 @@ public class BoletoTests
         Assert.That(boleto!.ObtenerTipoTarjeta(), Is.EqualTo("Normal"));
         Assert.That(boleto.ObtenerLineaColectivo(), Is.EqualTo("Línea 102"));
         Assert.That(boleto.ObtenerTarjetaId(), Is.EqualTo(tarjeta.Id));
-        Assert.That(boleto.SaldoRestante, Is.EqualTo(3420m));
-        Assert.That(boleto.TotalAbonado, Is.EqualTo(1580m));
+        Assert.That(boleto.SaldoRestante, Is.EqualTo(2850m));
+        Assert.That(boleto.TotalAbonado, Is.EqualTo(2150m));
     }
 
     [Test]
@@ -92,22 +92,22 @@ public class BoletoTests
         var boleto = colectivo.PagarCon(tarjeta);
 
         Assert.That(boleto!.ObtenerTipoTarjeta(), Is.EqualTo("MedioBoletoEstudiantil"));
-        Assert.That(boleto.Monto, Is.EqualTo(790m));
+        Assert.That(boleto.Monto, Is.EqualTo(1075m));
     }
 
     [Test]
-    public void Boleto_ConSaldoNegativo_InformaTotalAbonadoSuperior()
+    public void Boleto_ConSaldoNegativoYMedioBoleto_InformaTotalAbonadoSuperior()
     {
-        var tarjeta = new Tarjeta();
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("MedioBoletoEstudiantil", 0.5m) };
         tarjeta.Descontar(400m);
         var colectivo = new Colectivo("Línea 102");
 
         var boleto = colectivo.PagarCon(tarjeta);
 
         Assert.That(boleto, Is.Not.Null);
-        Assert.That(boleto!.Monto, Is.EqualTo(1580m));
-        Assert.That(boleto.SaldoRestante, Is.EqualTo(-1980m));
-        Assert.That(boleto.TotalAbonado, Is.EqualTo(1980m));
+        Assert.That(boleto!.Monto, Is.EqualTo(1075m));
+        Assert.That(boleto.SaldoRestante, Is.EqualTo(-1475m));
+        Assert.That(boleto.TotalAbonado, Is.EqualTo(1475m));
     }
 
     [Test]
@@ -145,9 +145,9 @@ public class BoletoTests
         var recuperado = _db.Boletos.Find(boleto!.Id);
 
         Assert.That(recuperado, Is.Not.Null);
-        Assert.That(recuperado!.Monto, Is.EqualTo(1580m));
-        Assert.That(recuperado.SaldoRestante, Is.EqualTo(3420m));
-        Assert.That(recuperado.TotalAbonado, Is.EqualTo(1580m));
+        Assert.That(recuperado!.Monto, Is.EqualTo(2150m));
+        Assert.That(recuperado.SaldoRestante, Is.EqualTo(2850m));
+        Assert.That(recuperado.TotalAbonado, Is.EqualTo(2150m));
         Assert.That(recuperado.TarjetaId, Is.EqualTo(tarjeta.Id));
     }
 

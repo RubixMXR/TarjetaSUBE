@@ -3,7 +3,7 @@
 public class Colectivo
 {
     private string _linea = string.Empty;
-    private decimal _tarifa = 1580m;
+    private decimal _tarifa = 2150m;
 
     public int Id { get; set; }
 

@@ -122,9 +122,9 @@ public class TarjetaTests
         var tarjeta = new Tarjeta();
         tarjeta.Cargar(5000m);
 
-        tarjeta.Descontar(1580m);
+        tarjeta.Descontar(2150m);
 
-        Assert.That(tarjeta.Saldo, Is.EqualTo(3420m));
+        Assert.That(tarjeta.Saldo, Is.EqualTo(2850m));
     }
 
     [Test]
@@ -193,16 +193,16 @@ public class TarjetaTests
     }
 
     [Test]
-    public void Cargar_DescuentaElSaldoConsumidoEnViajesPlus()
+    public void Cargar_DescuentaElSaldoConsumidoEnViajePlusDentroDelLimite()
     {
-        var tarjeta = new Tarjeta();
+        var tarjeta = new Tarjeta(150m);
         var colectivo = new Colectivo("Línea 102");
 
         colectivo.PagarCon(tarjeta);
-        Assert.That(tarjeta.Saldo, Is.EqualTo(-1580m));
+        Assert.That(tarjeta.Saldo, Is.EqualTo(-2000m));
 
         tarjeta.Cargar(3000m);
-        Assert.That(tarjeta.Saldo, Is.EqualTo(1420m));
+        Assert.That(tarjeta.Saldo, Is.EqualTo(1000m));
     }
 
     [Test]
@@ -227,6 +227,6 @@ public class TarjetaTests
         colectivo.PagarCon(tarjeta);
 
         Assert.That(tarjeta.Saldo, Is.EqualTo(56000m));
-        Assert.That(tarjeta.SaldoPendiente, Is.EqualTo(2420m));
+        Assert.That(tarjeta.SaldoPendiente, Is.EqualTo(1850m));
     }
 }
