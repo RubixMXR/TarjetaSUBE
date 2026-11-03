@@ -292,4 +292,42 @@ public class ColectivoTests
 
         Assert.That(boletoDiaSiguiente!.Monto, Is.EqualTo(790m));
     }
+
+    [Test]
+    public void PagarCon_BoletoGratuitoEstudiantil_NoPermiteMasDeDosViajesGratisPorDia()
+    {
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("BoletoGratuitoEstudiantil", 0m) };
+        tarjeta.Cargar(5000m);
+        var colectivo = new Colectivo("Línea 102");
+        var fecha = new DateTime(2026, 11, 3, 10, 0, 0);
+
+        colectivo.PagarCon(tarjeta, fecha);
+        colectivo.PagarCon(tarjeta, fecha.AddMinutes(10));
+        var tercero = colectivo.PagarCon(tarjeta, fecha.AddMinutes(20));
+
+        var viajesGratis = tarjeta.Boletos.Count(b => b.Fecha.Date == fecha.Date && b.Monto == 0m);
+
+        Assert.That(viajesGratis, Is.EqualTo(2));
+        Assert.That(tercero, Is.Not.Null);
+        Assert.That(tercero!.Monto, Is.Not.EqualTo(0m));
+    }
+
+    [Test]
+    public void PagarCon_BoletoGratuitoEstudiantil_ViajesPosterioresAlSegundoSeCobranCompletos()
+    {
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("BoletoGratuitoEstudiantil", 0m) };
+        tarjeta.Cargar(10000m);
+        var colectivo = new Colectivo("Línea 102");
+        var fecha = new DateTime(2026, 11, 3, 10, 0, 0);
+
+        var boleto1 = colectivo.PagarCon(tarjeta, fecha);
+        var boleto2 = colectivo.PagarCon(tarjeta, fecha.AddMinutes(10));
+        var boleto3 = colectivo.PagarCon(tarjeta, fecha.AddMinutes(20));
+        var boleto4 = colectivo.PagarCon(tarjeta, fecha.AddMinutes(30));
+
+        Assert.That(boleto1!.Monto, Is.EqualTo(0m));
+        Assert.That(boleto2!.Monto, Is.EqualTo(0m));
+        Assert.That(boleto3!.Monto, Is.EqualTo(1580m));
+        Assert.That(boleto4!.Monto, Is.EqualTo(1580m));
+    }
 }

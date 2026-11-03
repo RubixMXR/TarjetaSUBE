@@ -62,6 +62,19 @@ public class Colectivo
             }
         }
 
+        var esBoletoGratuito = tarjeta.Tipo?.Nombre == "BoletoGratuitoEstudiantil";
+
+        if (esBoletoGratuito)
+        {
+            var viajesGratisHoy = tarjeta.Boletos
+                .Count(b => b.Fecha.Date == fechaActual.Date && b.Monto == 0m);
+
+            if (viajesGratisHoy >= 2)
+            {
+                coeficiente = 1m;
+            }
+        }
+
         var montoBase = _tarifa * coeficiente;
 
         if (montoBase > 0 && !tarjeta.PuedeDescontar(montoBase))
