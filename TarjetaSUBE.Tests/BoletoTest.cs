@@ -88,8 +88,9 @@ public class BoletoTests
         var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("MedioBoletoEstudiantil", 0.5m) };
         tarjeta.Cargar(5000m);
         var colectivo = new Colectivo("Línea 102");
+        var fecha = new DateTime(2026, 11, 4, 10, 0, 0);
 
-        var boleto = colectivo.PagarCon(tarjeta);
+        var boleto = colectivo.PagarCon(tarjeta, fecha);
 
         Assert.That(boleto!.ObtenerTipoTarjeta(), Is.EqualTo("MedioBoletoEstudiantil"));
         Assert.That(boleto.Monto, Is.EqualTo(1075m));
@@ -101,8 +102,9 @@ public class BoletoTests
         var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("MedioBoletoEstudiantil", 0.5m) };
         tarjeta.Descontar(400m);
         var colectivo = new Colectivo("Línea 102");
+        var fecha = new DateTime(2026, 11, 4, 10, 0, 0);
 
-        var boleto = colectivo.PagarCon(tarjeta);
+        var boleto = colectivo.PagarCon(tarjeta, fecha);
 
         Assert.That(boleto, Is.Not.Null);
         Assert.That(boleto!.Monto, Is.EqualTo(1075m));
@@ -116,8 +118,9 @@ public class BoletoTests
         var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("FranquiciaCompleta", 0m) };
         tarjeta.Descontar(1000m);
         var colectivo = new Colectivo("Línea 102");
+        var fecha = new DateTime(2026, 11, 4, 10, 0, 0);
 
-        var boleto = colectivo.PagarCon(tarjeta);
+        var boleto = colectivo.PagarCon(tarjeta, fecha);
 
         Assert.That(boleto, Is.Not.Null);
         Assert.That(boleto!.Monto, Is.EqualTo(0m));

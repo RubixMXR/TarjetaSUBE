@@ -48,6 +48,17 @@ public class Colectivo
         var esMedioBoleto = tipoNombre == "MedioBoletoEstudiantil";
         var coeficiente = tarjeta.Tipo?.Coeficiente ?? 1m;
 
+        if (tipoNombre != "Normal")
+        {
+            var dia = fechaActual.DayOfWeek;
+            var hora = fechaActual.TimeOfDay;
+            var esFinDeSemana = dia == DayOfWeek.Saturday || dia == DayOfWeek.Sunday;
+            var fueraDeHorario = hora < new TimeSpan(6, 0, 0) || hora >= new TimeSpan(22, 0, 0);
+
+            if (esFinDeSemana || fueraDeHorario)
+                return null;
+        }
+
         if (esMedioBoleto)
         {
             var ultimoViaje = tarjeta.Boletos.OrderByDescending(b => b.Fecha).FirstOrDefault();
