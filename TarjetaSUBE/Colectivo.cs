@@ -44,7 +44,8 @@ public class Colectivo
             throw new ArgumentNullException(nameof(tarjeta));
 
         var fechaActual = fechaSimulada ?? DateTime.Now;
-        var esMedioBoleto = tarjeta.Tipo?.Nombre == "MedioBoletoEstudiantil";
+        var tipoNombre = tarjeta.Tipo?.Nombre ?? "Normal";
+        var esMedioBoleto = tipoNombre == "MedioBoletoEstudiantil";
         var coeficiente = tarjeta.Tipo?.Coeficiente ?? 1m;
 
         if (esMedioBoleto)
@@ -62,7 +63,7 @@ public class Colectivo
             }
         }
 
-        var esBoletoGratuito = tarjeta.Tipo?.Nombre == "BoletoGratuitoEstudiantil";
+        var esBoletoGratuito = tipoNombre == "BoletoGratuitoEstudiantil";
 
         if (esBoletoGratuito)
         {
@@ -73,6 +74,17 @@ public class Colectivo
             {
                 coeficiente = 1m;
             }
+        }
+
+        if (tipoNombre == "Normal")
+        {
+            var viajesMes = tarjeta.Boletos.Count(b => b.Fecha.Year == fechaActual.Year && b.Fecha.Month == fechaActual.Month);
+            var numeroViaje = viajesMes + 1;
+
+            if (numeroViaje >= 80)
+                coeficiente *= 0.75m;
+            else if (numeroViaje >= 30)
+                coeficiente *= 0.80m;
         }
 
         var montoBase = _tarifa * coeficiente;
@@ -96,7 +108,7 @@ public class Colectivo
         {
             Tarjeta = tarjeta,
             TarjetaId = tarjeta.Id,
-            TipoTarjeta = tarjeta.Tipo?.Nombre ?? "Normal",
+            TipoTarjeta = tipoNombre,
             Colectivo = this,
             Monto = montoBase,
             SaldoRestante = tarjeta.Saldo,
