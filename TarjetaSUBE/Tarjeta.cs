@@ -3,6 +3,7 @@
 public class Tarjeta
 {
     private decimal _saldo;
+    private decimal _saldoPendiente;
 
     public int Id { get; set; }
 
@@ -14,7 +15,9 @@ public class Tarjeta
 
     public decimal Saldo => _saldo;
 
-    public const decimal LimiteSaldo = 40000m;
+    public decimal SaldoPendiente => _saldoPendiente;
+
+    public const decimal LimiteSaldo = 56000m;
 
     public const decimal LimiteNegativo = -2000m;
 
@@ -42,10 +45,17 @@ public class Tarjeta
         if (!CargasAceptadas.Contains(monto))
             throw new ArgumentException($"El monto ${monto} no es una carga aceptada.");
 
-        if (_saldo + monto > LimiteSaldo)
-            throw new InvalidOperationException($"La carga supera el límite de saldo de ${LimiteSaldo}.");
+        var nuevoSaldo = _saldo + monto;
 
-        _saldo += monto;
+        if (nuevoSaldo > LimiteSaldo)
+        {
+            _saldoPendiente += nuevoSaldo - LimiteSaldo;
+            _saldo = LimiteSaldo;
+        }
+        else
+        {
+            _saldo = nuevoSaldo;
+        }
     }
 
     public void Descontar(decimal monto)
@@ -57,10 +67,27 @@ public class Tarjeta
             throw new InvalidOperationException("Saldo insuficiente.");
 
         _saldo -= monto;
+        AcreditarCarga();
     }
 
     public bool PuedeDescontar(decimal monto)
     {
         return monto > 0 && _saldo - monto >= LimiteNegativo;
+    }
+
+    public void AcreditarCarga()
+    {
+        if (_saldoPendiente <= 0)
+            return;
+
+        var espacio = LimiteSaldo - _saldo;
+
+        if (espacio <= 0)
+            return;
+
+        var aAcreditar = Math.Min(_saldoPendiente, espacio);
+
+        _saldo += aAcreditar;
+        _saldoPendiente -= aAcreditar;
     }
 }
