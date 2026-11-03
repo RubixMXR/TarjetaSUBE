@@ -8,6 +8,18 @@ public class ColectivoTests
 {
     private SubeDbContext _db = null!;
 
+    private Tarjeta CrearTarjetaNormalConViajes(int cantidadViajes, DateTime fechaReferencia)
+    {
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("Normal", 1m) };
+        tarjeta.Cargar(5000m);
+        var primerDiaMes = new DateTime(fechaReferencia.Year, fechaReferencia.Month, 1);
+        for (int i = 0; i < cantidadViajes; i++)
+        {
+            tarjeta.Boletos.Add(new Boleto { Fecha = primerDiaMes, Monto = 2150m });
+        }
+        return tarjeta;
+    }
+
     [SetUp]
     public void Setup()
     {
@@ -329,5 +341,151 @@ public class ColectivoTests
         Assert.That(boleto2!.Monto, Is.EqualTo(0m));
         Assert.That(boleto3!.Monto, Is.EqualTo(2150m));
         Assert.That(boleto4!.Monto, Is.EqualTo(2150m));
+    }
+
+    [Test]
+    public void PagarCon_TarjetaNormal_PrimerViajeDelMes_PagaTarifaCompleta()
+    {
+        var fecha = new DateTime(2026, 11, 15);
+        var tarjeta = CrearTarjetaNormalConViajes(0, fecha);
+        var colectivo = new Colectivo("Línea 102");
+
+        var boleto = colectivo.PagarCon(tarjeta, fecha);
+
+        Assert.That(boleto, Is.Not.Null);
+        Assert.That(boleto!.Monto, Is.EqualTo(2150m));
+    }
+
+    [Test]
+    public void PagarCon_TarjetaNormal_Viaje29_PagaTarifaCompleta()
+    {
+        var fecha = new DateTime(2026, 11, 15);
+        var tarjeta = CrearTarjetaNormalConViajes(28, fecha);
+        var colectivo = new Colectivo("Línea 102");
+
+        var boleto = colectivo.PagarCon(tarjeta, fecha);
+
+        Assert.That(boleto, Is.Not.Null);
+        Assert.That(boleto!.Monto, Is.EqualTo(2150m));
+    }
+
+    [Test]
+    public void PagarCon_TarjetaNormal_Viaje30_Aplica20PorcientoDescuento()
+    {
+        var fecha = new DateTime(2026, 11, 15);
+        var tarjeta = CrearTarjetaNormalConViajes(29, fecha);
+        var colectivo = new Colectivo("Línea 102");
+
+        var boleto = colectivo.PagarCon(tarjeta, fecha);
+
+        Assert.That(boleto, Is.Not.Null);
+        Assert.That(boleto!.Monto, Is.EqualTo(1720m));
+    }
+
+    [Test]
+    public void PagarCon_TarjetaNormal_Viaje79_Aplica20PorcientoDescuento()
+    {
+        var fecha = new DateTime(2026, 11, 15);
+        var tarjeta = CrearTarjetaNormalConViajes(78, fecha);
+        var colectivo = new Colectivo("Línea 102");
+
+        var boleto = colectivo.PagarCon(tarjeta, fecha);
+
+        Assert.That(boleto, Is.Not.Null);
+        Assert.That(boleto!.Monto, Is.EqualTo(1720m));
+    }
+
+    [Test]
+    public void PagarCon_TarjetaNormal_Viaje80_Aplica25PorcientoDescuento()
+    {
+        var fecha = new DateTime(2026, 11, 15);
+        var tarjeta = CrearTarjetaNormalConViajes(79, fecha);
+        var colectivo = new Colectivo("Línea 102");
+
+        var boleto = colectivo.PagarCon(tarjeta, fecha);
+
+        Assert.That(boleto, Is.Not.Null);
+        Assert.That(boleto!.Monto, Is.EqualTo(1612.5m));
+    }
+
+    [Test]
+    public void PagarCon_TarjetaNormal_Viaje100_Aplica25PorcientoDescuento()
+    {
+        var fecha = new DateTime(2026, 11, 15);
+        var tarjeta = CrearTarjetaNormalConViajes(99, fecha);
+        var colectivo = new Colectivo("Línea 102");
+
+        var boleto = colectivo.PagarCon(tarjeta, fecha);
+
+        Assert.That(boleto, Is.Not.Null);
+        Assert.That(boleto!.Monto, Is.EqualTo(1612.5m));
+    }
+
+    [Test]
+    public void PagarCon_TarjetaNormal_MesSiguiente_ReseteaContador()
+    {
+        var fechaOctubre = new DateTime(2026, 10, 15);
+        var fechaNoviembre = new DateTime(2026, 11, 15);
+        var tarjeta = CrearTarjetaNormalConViajes(29, fechaOctubre);
+        var colectivo = new Colectivo("Línea 102");
+
+        var boleto = colectivo.PagarCon(tarjeta, fechaNoviembre);
+
+        Assert.That(boleto, Is.Not.Null);
+        Assert.That(boleto!.Monto, Is.EqualTo(2150m));
+    }
+
+    [Test]
+    public void PagarCon_TarjetaMedioBoleto_NoAplicaDescuentoPorUsoFrecuente()
+    {
+        var fecha = new DateTime(2026, 11, 15, 12, 0, 0);
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("MedioBoletoEstudiantil", 0.5m) };
+        tarjeta.Cargar(5000m);
+        var primerDiaMes = new DateTime(2026, 11, 1, 10, 0, 0);
+        for (int i = 0; i < 29; i++)
+        {
+            tarjeta.Boletos.Add(new Boleto { Fecha = primerDiaMes, Monto = 1075m });
+        }
+        var colectivo = new Colectivo("Línea 102");
+
+        var boleto = colectivo.PagarCon(tarjeta, fecha);
+
+        Assert.That(boleto, Is.Not.Null);
+        Assert.That(boleto!.Monto, Is.EqualTo(1075m));
+    }
+
+    [Test]
+    public void PagarCon_TarjetaBoletoGratuito_NoAplicaDescuentoPorUsoFrecuente()
+    {
+        var fecha = new DateTime(2026, 11, 15, 12, 0, 0);
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("BoletoGratuitoEstudiantil", 0m) };
+        tarjeta.Cargar(5000m);
+        tarjeta.Boletos.Add(new Boleto { Fecha = fecha.AddHours(-1), Monto = 0m });
+        tarjeta.Boletos.Add(new Boleto { Fecha = fecha.AddHours(-2), Monto = 0m });
+        var primerDiaMes = new DateTime(2026, 11, 1, 10, 0, 0);
+        for (int i = 0; i < 27; i++)
+        {
+            tarjeta.Boletos.Add(new Boleto { Fecha = primerDiaMes, Monto = 0m });
+        }
+        var colectivo = new Colectivo("Línea 102");
+
+        var boleto = colectivo.PagarCon(tarjeta, fecha);
+
+        Assert.That(boleto, Is.Not.Null);
+        Assert.That(boleto!.Monto, Is.EqualTo(2150m));
+    }
+
+    [Test]
+    public void PagarCon_TarjetaFranquiciaCompleta_NoAplicaDescuentoPorUsoFrecuente()
+    {
+        var fecha = new DateTime(2026, 11, 15, 12, 0, 0);
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("FranquiciaCompleta", 0m) };
+        tarjeta.Cargar(5000m);
+        var colectivo = new Colectivo("Línea 102");
+
+        var boleto = colectivo.PagarCon(tarjeta, fecha);
+
+        Assert.That(boleto, Is.Not.Null);
+        Assert.That(boleto!.Monto, Is.EqualTo(0m));
     }
 }
