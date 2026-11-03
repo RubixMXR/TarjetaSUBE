@@ -221,8 +221,9 @@ public class ColectivoTests
     {
         var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("FranquiciaCompleta", 0m) };
         var colectivo = new Colectivo("Línea 102");
+        var fecha = new DateTime(2026, 11, 4, 10, 0, 0);
 
-        var boleto = colectivo.PagarCon(tarjeta);
+        var boleto = colectivo.PagarCon(tarjeta, fecha);
 
         Assert.That(boleto, Is.Not.Null);
         Assert.That(boleto!.Monto, Is.EqualTo(0m));
@@ -235,8 +236,9 @@ public class ColectivoTests
         var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("BoletoGratuitoEstudiantil", 0m) };
         tarjeta.Cargar(2000m);
         var colectivo = new Colectivo("Línea 102");
+        var fecha = new DateTime(2026, 11, 4, 10, 0, 0);
 
-        var boleto = colectivo.PagarCon(tarjeta);
+        var boleto = colectivo.PagarCon(tarjeta, fecha);
 
         Assert.That(boleto, Is.Not.Null);
         Assert.That(boleto!.Monto, Is.EqualTo(0m));
@@ -249,7 +251,7 @@ public class ColectivoTests
         var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("MedioBoletoEstudiantil", 0.5m) };
         tarjeta.Cargar(5000m);
         var colectivo = new Colectivo("Línea 102");
-        var fecha = new DateTime(2026, 10, 31, 10, 0, 0);
+        var fecha = new DateTime(2026, 10, 30, 10, 0, 0);
 
         var primerBoleto = colectivo.PagarCon(tarjeta, fecha);
         Assert.That(primerBoleto, Is.Not.Null);
@@ -264,7 +266,7 @@ public class ColectivoTests
         var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("MedioBoletoEstudiantil", 0.5m) };
         tarjeta.Cargar(5000m);
         var colectivo = new Colectivo("Línea 102");
-        var fecha = new DateTime(2026, 10, 31, 10, 0, 0);
+        var fecha = new DateTime(2026, 10, 30, 10, 0, 0);
 
         colectivo.PagarCon(tarjeta, fecha);
 
@@ -278,7 +280,7 @@ public class ColectivoTests
         var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("MedioBoletoEstudiantil", 0.5m) };
         tarjeta.Cargar(5000m);
         var colectivo = new Colectivo("Línea 102");
-        var fecha = new DateTime(2026, 10, 31, 10, 0, 0);
+        var fecha = new DateTime(2026, 10, 30, 10, 0, 0);
 
         var boleto1 = colectivo.PagarCon(tarjeta, fecha);
         var boleto2 = colectivo.PagarCon(tarjeta, fecha.AddMinutes(6));
@@ -295,7 +297,7 @@ public class ColectivoTests
         var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("MedioBoletoEstudiantil", 0.5m) };
         tarjeta.Cargar(10000m);
         var colectivo = new Colectivo("Línea 102");
-        var fecha = new DateTime(2026, 10, 31, 10, 0, 0);
+        var fecha = new DateTime(2026, 10, 29, 10, 0, 0);
 
         colectivo.PagarCon(tarjeta, fecha);
         colectivo.PagarCon(tarjeta, fecha.AddMinutes(6));
@@ -438,7 +440,7 @@ public class ColectivoTests
     [Test]
     public void PagarCon_TarjetaMedioBoleto_NoAplicaDescuentoPorUsoFrecuente()
     {
-        var fecha = new DateTime(2026, 11, 15, 12, 0, 0);
+        var fecha = new DateTime(2026, 11, 16, 12, 0, 0);
         var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("MedioBoletoEstudiantil", 0.5m) };
         tarjeta.Cargar(5000m);
         var primerDiaMes = new DateTime(2026, 11, 1, 10, 0, 0);
@@ -457,7 +459,7 @@ public class ColectivoTests
     [Test]
     public void PagarCon_TarjetaBoletoGratuito_NoAplicaDescuentoPorUsoFrecuente()
     {
-        var fecha = new DateTime(2026, 11, 15, 12, 0, 0);
+        var fecha = new DateTime(2026, 11, 16, 12, 0, 0);
         var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("BoletoGratuitoEstudiantil", 0m) };
         tarjeta.Cargar(5000m);
         tarjeta.Boletos.Add(new Boleto { Fecha = fecha.AddHours(-1), Monto = 0m });
@@ -478,7 +480,7 @@ public class ColectivoTests
     [Test]
     public void PagarCon_TarjetaFranquiciaCompleta_NoAplicaDescuentoPorUsoFrecuente()
     {
-        var fecha = new DateTime(2026, 11, 15, 12, 0, 0);
+        var fecha = new DateTime(2026, 11, 16, 12, 0, 0);
         var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("FranquiciaCompleta", 0m) };
         tarjeta.Cargar(5000m);
         var colectivo = new Colectivo("Línea 102");
@@ -487,5 +489,93 @@ public class ColectivoTests
 
         Assert.That(boleto, Is.Not.Null);
         Assert.That(boleto!.Monto, Is.EqualTo(0m));
+    }
+
+    [Test]
+    public void PagarCon_FranquiciaCompleta_AntesDeLas6_DevuelveNull()
+    {
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("FranquiciaCompleta", 0m) };
+        var colectivo = new Colectivo("Línea 102");
+        var fecha = new DateTime(2026, 11, 4, 5, 59, 59);
+
+        var boleto = colectivo.PagarCon(tarjeta, fecha);
+
+        Assert.That(boleto, Is.Null);
+    }
+
+    [Test]
+    public void PagarCon_FranquiciaCompleta_DespuesDeLas22_DevuelveNull()
+    {
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("FranquiciaCompleta", 0m) };
+        var colectivo = new Colectivo("Línea 102");
+        var fecha = new DateTime(2026, 11, 4, 22, 0, 0);
+
+        var boleto = colectivo.PagarCon(tarjeta, fecha);
+
+        Assert.That(boleto, Is.Null);
+    }
+
+    [Test]
+    public void PagarCon_FranquiciaCompleta_Sabado_DevuelveNull()
+    {
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("FranquiciaCompleta", 0m) };
+        var colectivo = new Colectivo("Línea 102");
+        var fecha = new DateTime(2026, 11, 7, 10, 0, 0);
+
+        var boleto = colectivo.PagarCon(tarjeta, fecha);
+
+        Assert.That(boleto, Is.Null);
+    }
+
+    [Test]
+    public void PagarCon_MedioBoleto_AntesDeLas6_DevuelveNull()
+    {
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("MedioBoletoEstudiantil", 0.5m) };
+        tarjeta.Cargar(5000m);
+        var colectivo = new Colectivo("Línea 102");
+        var fecha = new DateTime(2026, 11, 4, 5, 59, 59);
+
+        var boleto = colectivo.PagarCon(tarjeta, fecha);
+
+        Assert.That(boleto, Is.Null);
+    }
+
+    [Test]
+    public void PagarCon_BoletoGratuito_Domingo_DevuelveNull()
+    {
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("BoletoGratuitoEstudiantil", 0m) };
+        tarjeta.Cargar(5000m);
+        var colectivo = new Colectivo("Línea 102");
+        var fecha = new DateTime(2026, 11, 8, 10, 0, 0);
+
+        var boleto = colectivo.PagarCon(tarjeta, fecha);
+
+        Assert.That(boleto, Is.Null);
+    }
+
+    [Test]
+    public void PagarCon_TarjetaNormal_AntesDeLas6_PuedePagar()
+    {
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("Normal", 1m) };
+        tarjeta.Cargar(5000m);
+        var colectivo = new Colectivo("Línea 102");
+        var fecha = new DateTime(2026, 11, 4, 5, 0, 0);
+
+        var boleto = colectivo.PagarCon(tarjeta, fecha);
+
+        Assert.That(boleto, Is.Not.Null);
+    }
+
+    [Test]
+    public void PagarCon_TarjetaNormal_Sabado_PuedePagar()
+    {
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("Normal", 1m) };
+        tarjeta.Cargar(5000m);
+        var colectivo = new Colectivo("Línea 102");
+        var fecha = new DateTime(2026, 11, 7, 10, 0, 0);
+
+        var boleto = colectivo.PagarCon(tarjeta, fecha);
+
+        Assert.That(boleto, Is.Not.Null);
     }
 }
