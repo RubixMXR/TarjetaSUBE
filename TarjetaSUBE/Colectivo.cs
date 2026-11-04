@@ -7,6 +7,8 @@ public class Colectivo
 
     public int Id { get; set; }
 
+    public bool EsInterurbana { get; set; }
+
     public string Linea
     {
         get => _linea;
@@ -33,9 +35,10 @@ public class Colectivo
 
     public Colectivo() { }
 
-    public Colectivo(string linea)
+    public Colectivo(string linea, bool esInterurbana = false)
     {
         Linea = linea;
+        EsInterurbana = esInterurbana;
     }
 
     public Boleto? PagarCon(Tarjeta tarjeta, DateTime? fechaSimulada = null)
@@ -98,7 +101,8 @@ public class Colectivo
                 coeficiente *= 0.80m;
         }
 
-        var montoBase = _tarifa * coeficiente;
+        var tarifaBase = EsInterurbana ? 3000m : _tarifa;
+        var montoBase = tarifaBase * coeficiente;
 
         if (montoBase > 0 && !tarjeta.PuedeDescontar(montoBase))
             return null;

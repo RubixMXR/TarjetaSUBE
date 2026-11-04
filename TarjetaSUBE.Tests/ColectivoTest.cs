@@ -206,9 +206,10 @@ public class ColectivoTests
         tarjetaMedio.Cargar(5000m);
 
         var colectivo = new Colectivo("Línea 102");
+        var fecha = new DateTime(2026, 11, 4, 10, 0, 0);
 
-        var boletoNormal = colectivo.PagarCon(tarjetaNormal);
-        var boletoMedio = colectivo.PagarCon(tarjetaMedio);
+        var boletoNormal = colectivo.PagarCon(tarjetaNormal, fecha);
+        var boletoMedio = colectivo.PagarCon(tarjetaMedio, fecha);
 
         Assert.That(boletoNormal, Is.Not.Null);
         Assert.That(boletoMedio, Is.Not.Null);
@@ -577,5 +578,61 @@ public class ColectivoTests
         var boleto = colectivo.PagarCon(tarjeta, fecha);
 
         Assert.That(boleto, Is.Not.Null);
+    }
+
+    [Test]
+    public void PagarCon_ColectivoInterurbano_TarjetaNormal_Cobra3000()
+    {
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("Normal", 1m) };
+        tarjeta.Cargar(5000m);
+        var colectivo = new Colectivo("Línea Interurbana", esInterurbana: true);
+        var fecha = new DateTime(2026, 11, 4, 10, 0, 0);
+
+        var boleto = colectivo.PagarCon(tarjeta, fecha);
+
+        Assert.That(boleto, Is.Not.Null);
+        Assert.That(boleto!.Monto, Is.EqualTo(3000m));
+        Assert.That(tarjeta.Saldo, Is.EqualTo(2000m));
+    }
+
+    [Test]
+    public void PagarCon_ColectivoInterurbano_ConMedioBoleto_CobraMitadDe3000()
+    {
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("MedioBoletoEstudiantil", 0.5m) };
+        tarjeta.Cargar(5000m);
+        var colectivo = new Colectivo("Línea Interurbana", esInterurbana: true);
+        var fecha = new DateTime(2026, 11, 4, 10, 0, 0);
+
+        var boleto = colectivo.PagarCon(tarjeta, fecha);
+
+        Assert.That(boleto, Is.Not.Null);
+        Assert.That(boleto!.Monto, Is.EqualTo(1500m));
+    }
+
+    [Test]
+    public void PagarCon_ColectivoInterurbano_ConFranquiciaCompleta_CobraCero()
+    {
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("FranquiciaCompleta", 0m) };
+        var colectivo = new Colectivo("Línea Interurbana", esInterurbana: true);
+        var fecha = new DateTime(2026, 11, 4, 10, 0, 0);
+
+        var boleto = colectivo.PagarCon(tarjeta, fecha);
+
+        Assert.That(boleto, Is.Not.Null);
+        Assert.That(boleto!.Monto, Is.EqualTo(0m));
+    }
+
+    [Test]
+    public void PagarCon_ColectivoInterurbano_ConBoletoGratuito_CobraCero()
+    {
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("BoletoGratuitoEstudiantil", 0m) };
+        tarjeta.Cargar(2000m);
+        var colectivo = new Colectivo("Línea Interurbana", esInterurbana: true);
+        var fecha = new DateTime(2026, 11, 4, 10, 0, 0);
+
+        var boleto = colectivo.PagarCon(tarjeta, fecha);
+
+        Assert.That(boleto, Is.Not.Null);
+        Assert.That(boleto!.Monto, Is.EqualTo(0m));
     }
 }
