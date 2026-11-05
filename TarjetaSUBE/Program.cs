@@ -3,7 +3,7 @@
 using var db = new SubeDbContext();
 db.Database.EnsureCreated();
 
-Console.WriteLine("=== Simulación Tarjeta SUBE - Iteración 1 ===");
+Console.WriteLine("=== Simulación Tarjeta SUBE ===");
 Console.WriteLine();
 
 Console.WriteLine("--- Creando tarjeta y cargando saldo ---");
