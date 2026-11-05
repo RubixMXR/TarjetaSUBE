@@ -17,6 +17,8 @@ public class Tarjeta
 
     public decimal SaldoPendiente => _saldoPendiente;
 
+    public decimal MultasPendientes { get; set; }
+
     public const decimal LimiteSaldo = 56000m;
 
     public const decimal LimiteNegativo = -2000m;
