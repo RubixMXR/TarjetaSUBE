@@ -61,6 +61,13 @@ public class BoletoTests
     }
 
     [Test]
+    public void Boleto_Trasbordo_EsIndicadoCorrectamente()
+    {
+        var boleto = new Boleto { EsTrasbordo = true };
+        Assert.That(boleto.ObtenerEsTrasbordo(), Is.True);
+    }
+
+    [Test]
     public void Boleto_ExponeCorrectamenteLosDatosDelViaje()
     {
         var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("Normal", 1m) };
