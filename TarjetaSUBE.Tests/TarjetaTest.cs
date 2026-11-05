@@ -55,18 +55,13 @@ public class TarjetaTests
     [Test]
     public void Cargar_AceptaTodosLosMontosValidos()
     {
-        var montos = new decimal[]
-        {
-            2000m, 3000m, 4000m, 5000m, 8000m,
-            10000m, 15000m, 20000m, 25000m, 30000m
-        };
+        var montosAceptados = new decimal[] { 2000m, 3000m, 4000m, 5000m, 8000m, 10000m, 15000m, 20000m, 25000m, 30000m };
 
-        foreach (var monto in montos)
+        foreach (var monto in montosAceptados)
         {
             var tarjeta = new Tarjeta();
             tarjeta.Cargar(monto);
-            Assert.That(tarjeta.Saldo, Is.EqualTo(monto),
-                $"Debería aceptar la carga de ${monto}");
+            Assert.That(tarjeta.Saldo, Is.EqualTo(monto), $"Falló al cargar el monto de ${monto}");
         }
     }
 
