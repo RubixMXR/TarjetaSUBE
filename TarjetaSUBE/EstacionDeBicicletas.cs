@@ -30,7 +30,7 @@ public class EstacionDeBicicletas
             return null;
 
         tarjeta.Descontar(totalACobrar);
-        tarjeta.MultasPendientes = 0m;
+        tarjeta.LimpiarMultas();
 
         biciDisponible.Disponible = false;
         biciDisponible.HoraRetiro = fechaRetiro;
@@ -53,7 +53,7 @@ public class EstacionDeBicicletas
 
         if (tiempoUso.TotalHours > 1)
         {
-            tarjeta.MultasPendientes += 1250m;
+            tarjeta.AgregarMulta(1250m);
         }
 
         bici.Disponible = true;

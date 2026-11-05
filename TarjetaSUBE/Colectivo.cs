@@ -36,7 +36,7 @@ public class Colectivo
         _reloj = new ProveedorDeFechaSistema();
     }
 
-    public Colectivo(string linea, bool esInterurbana = false, IProveedorDeFecha reloj = null)
+    public Colectivo(string linea, bool esInterurbana = false, IProveedorDeFecha? reloj = null)
     {
         Linea = linea;
         EsInterurbana = esInterurbana;

@@ -45,7 +45,7 @@ public class EstacionDeBicicletasTests
     {
         var tarjeta = new Tarjeta();
         tarjeta.Cargar(5000m);
-        tarjeta.MultasPendientes = 1250m;
+        tarjeta.AgregarMulta(1250m);
         var fecha = new DateTime(2026, 11, 4, 10, 0, 0);
 
         var bici = _estacion.RetirarBicicleta(tarjeta, fecha);
@@ -59,7 +59,7 @@ public class EstacionDeBicicletasTests
     public void RetirarBicicleta_ConMultaPendienteSinSaldoSuficiente_RetornaNull()
     {
         var tarjeta = new Tarjeta();
-        tarjeta.MultasPendientes = 1250m;
+        tarjeta.AgregarMulta(1250m);
         var fecha = new DateTime(2026, 11, 4, 10, 0, 0);
 
         var bici = _estacion.RetirarBicicleta(tarjeta, fecha);
@@ -74,7 +74,8 @@ public class EstacionDeBicicletasTests
     {
         var tarjeta = new Tarjeta();
         tarjeta.Cargar(10000m);
-        tarjeta.MultasPendientes = 2500m;
+        tarjeta.AgregarMulta(1250m);
+        tarjeta.AgregarMulta(1250m);
         var fecha = new DateTime(2026, 11, 4, 10, 0, 0);
 
         var bici = _estacion.RetirarBicicleta(tarjeta, fecha);

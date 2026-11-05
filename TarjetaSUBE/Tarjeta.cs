@@ -4,6 +4,7 @@ public class Tarjeta
 {
     private decimal _saldo;
     private decimal _saldoPendiente;
+    private decimal _multasPendientes;
 
     public int Id { get; set; }
 
@@ -17,7 +18,7 @@ public class Tarjeta
 
     public decimal SaldoPendiente => _saldoPendiente;
 
-    public decimal MultasPendientes { get; set; }
+    public decimal MultasPendientes => _multasPendientes;
 
     public const decimal LimiteSaldo = 56000m;
 
@@ -91,5 +92,15 @@ public class Tarjeta
 
         _saldo += aAcreditar;
         _saldoPendiente -= aAcreditar;
+    }
+
+    public void AgregarMulta(decimal monto)
+    {
+        _multasPendientes += monto;
+    }
+
+    public void LimpiarMultas()
+    {
+        _multasPendientes = 0m;
     }
 }
