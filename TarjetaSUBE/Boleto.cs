@@ -32,6 +32,8 @@ public class Boleto
 
     public DateTime Fecha { get; set; }
 
+    public bool EsTrasbordo { get; set; }
+
     public string ObtenerTipoTarjeta()
     {
         return TipoTarjeta;
@@ -45,5 +47,10 @@ public class Boleto
     public int ObtenerTarjetaId()
     {
         return TarjetaId;
+    }
+
+    public bool ObtenerEsTrasbordo()
+    {
+        return EsTrasbordo;
     }
 }

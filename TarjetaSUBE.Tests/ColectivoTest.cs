@@ -11,7 +11,7 @@ public class ColectivoTests
     private Tarjeta CrearTarjetaNormalConViajes(int cantidadViajes, DateTime fechaReferencia)
     {
         var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("Normal", 1m) };
-        tarjeta.Cargar(5000m);
+        tarjeta.Cargar(30000m);
         var primerDiaMes = new DateTime(fechaReferencia.Year, fechaReferencia.Month, 1);
         for (int i = 0; i < cantidadViajes; i++)
         {
@@ -634,5 +634,124 @@ public class ColectivoTests
 
         Assert.That(boleto, Is.Not.Null);
         Assert.That(boleto!.Monto, Is.EqualTo(0m));
+    }
+
+    [Test]
+    public void PagarCon_TrasbordoDentroDe1Hora_LineaDistinta_DevuelveMontoCero()
+    {
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("Normal", 1m) };
+        tarjeta.Cargar(5000m);
+        var colectivo102 = new Colectivo("Línea 102");
+        var colectivoK = new Colectivo("Línea K");
+        var fecha = new DateTime(2026, 11, 4, 10, 0, 0);
+
+        var boleto1 = colectivo102.PagarCon(tarjeta, fecha);
+        var boleto2 = colectivoK.PagarCon(tarjeta, fecha.AddMinutes(10));
+
+        Assert.That(boleto1!.Monto, Is.EqualTo(2150m));
+        Assert.That(boleto2, Is.Not.Null);
+        Assert.That(boleto2!.Monto, Is.EqualTo(0m));
+        Assert.That(boleto2.EsTrasbordo, Is.True);
+    }
+
+    [Test]
+    public void PagarCon_TrasbordoMismaLinea_DevuelveMontoNormal()
+    {
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("Normal", 1m) };
+        tarjeta.Cargar(5000m);
+        var colectivo102 = new Colectivo("Línea 102");
+        var fecha = new DateTime(2026, 11, 4, 10, 0, 0);
+
+        colectivo102.PagarCon(tarjeta, fecha);
+        var boleto2 = colectivo102.PagarCon(tarjeta, fecha.AddMinutes(10));
+
+        Assert.That(boleto2!.Monto, Is.EqualTo(2150m));
+        Assert.That(boleto2.EsTrasbordo, Is.False);
+    }
+
+    [Test]
+    public void PagarCon_TrasbordoFueraDeHorario_DevuelveMontoNormal()
+    {
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("Normal", 1m) };
+        tarjeta.Cargar(5000m);
+        var colectivo102 = new Colectivo("Línea 102");
+        var colectivoK = new Colectivo("Línea K");
+        var fecha = new DateTime(2026, 11, 4, 6, 30, 0);
+
+        colectivo102.PagarCon(tarjeta, fecha);
+        var boleto2 = colectivoK.PagarCon(tarjeta, fecha.AddMinutes(10));
+
+        Assert.That(boleto2!.Monto, Is.EqualTo(2150m));
+        Assert.That(boleto2.EsTrasbordo, Is.False);
+    }
+
+    [Test]
+    public void PagarCon_TrasbordoDomingo_DevuelveMontoNormal()
+    {
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("Normal", 1m) };
+        tarjeta.Cargar(5000m);
+        var colectivo102 = new Colectivo("Línea 102");
+        var colectivoK = new Colectivo("Línea K");
+        var fecha = new DateTime(2026, 11, 8, 10, 0, 0);
+
+        colectivo102.PagarCon(tarjeta, fecha);
+        var boleto2 = colectivoK.PagarCon(tarjeta, fecha.AddMinutes(10));
+
+        Assert.That(boleto2!.Monto, Is.EqualTo(2150m));
+        Assert.That(boleto2.EsTrasbordo, Is.False);
+    }
+
+    [Test]
+    public void PagarCon_TrasbordoDespuesDe1Hora_DevuelveMontoNormal()
+    {
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("Normal", 1m) };
+        tarjeta.Cargar(5000m);
+        var colectivo102 = new Colectivo("Línea 102");
+        var colectivoK = new Colectivo("Línea K");
+        var fecha = new DateTime(2026, 11, 4, 10, 0, 0);
+
+        colectivo102.PagarCon(tarjeta, fecha);
+        var boleto2 = colectivoK.PagarCon(tarjeta, fecha.AddMinutes(61));
+
+        Assert.That(boleto2!.Monto, Is.EqualTo(2150m));
+        Assert.That(boleto2.EsTrasbordo, Is.False);
+    }
+
+    [Test]
+    public void PagarCon_TrasbordoSinLimite_DentroDe1Hora()
+    {
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("Normal", 1m) };
+        tarjeta.Cargar(5000m);
+        var colectivo102 = new Colectivo("Línea 102");
+        var colectivoK = new Colectivo("Línea K");
+        var fecha = new DateTime(2026, 11, 4, 10, 0, 0);
+
+        colectivo102.PagarCon(tarjeta, fecha);
+        var boleto2 = colectivoK.PagarCon(tarjeta, fecha.AddMinutes(10));
+        var boleto3 = colectivo102.PagarCon(tarjeta, fecha.AddMinutes(20));
+        var boleto4 = colectivoK.PagarCon(tarjeta, fecha.AddMinutes(30));
+
+        Assert.That(boleto2!.EsTrasbordo, Is.True);
+        Assert.That(boleto3!.EsTrasbordo, Is.True);
+        Assert.That(boleto4!.EsTrasbordo, Is.True);
+        Assert.That(tarjeta.Saldo, Is.EqualTo(2850m));
+    }
+
+    [Test]
+    public void PagarCon_MedioBoleto_Trasbordo_DevuelveMontoCero()
+    {
+        var tarjeta = new Tarjeta { Tipo = new TarjetaTipo("MedioBoletoEstudiantil", 0.5m) };
+        tarjeta.Cargar(5000m);
+        var colectivo102 = new Colectivo("Línea 102");
+        var colectivoK = new Colectivo("Línea K");
+        var fecha = new DateTime(2026, 11, 4, 10, 0, 0);
+
+        var boleto1 = colectivo102.PagarCon(tarjeta, fecha);
+        var boleto2 = colectivoK.PagarCon(tarjeta, fecha.AddMinutes(10));
+
+        Assert.That(boleto1!.Monto, Is.EqualTo(1075m));
+        Assert.That(boleto2, Is.Not.Null);
+        Assert.That(boleto2!.Monto, Is.EqualTo(0m));
+        Assert.That(boleto2.EsTrasbordo, Is.True);
     }
 }

@@ -62,43 +62,72 @@ public class Colectivo
                 return null;
         }
 
-        if (esMedioBoleto)
+        var esTrasbordo = false;
+        var ultimoBoleto = tarjeta.Boletos.OrderByDescending(b => b.Fecha).FirstOrDefault();
+
+        if (ultimoBoleto != null && ultimoBoleto.Colectivo != null && this.Linea != ultimoBoleto.Colectivo.Linea)
         {
-            var ultimoViaje = tarjeta.Boletos.OrderByDescending(b => b.Fecha).FirstOrDefault();
-            if (ultimoViaje != null && (fechaActual - ultimoViaje.Fecha).TotalMinutes < 5)
+            var diaTrasbordo = fechaActual.DayOfWeek;
+            var horaTrasbordo = fechaActual.TimeOfDay;
+            var esDiaPermitidoTrasbordo = diaTrasbordo >= DayOfWeek.Monday && diaTrasbordo <= DayOfWeek.Saturday;
+            var esHoraPermitidaTrasbordo = horaTrasbordo >= new TimeSpan(7, 0, 0) && horaTrasbordo <= new TimeSpan(22, 0, 0);
+
+            if (esDiaPermitidoTrasbordo && esHoraPermitidaTrasbordo)
             {
-                return null;
-            }
+                var primerBoletoCadena = tarjeta.Boletos.OrderByDescending(b => b.Fecha)
+                    .FirstOrDefault(b => !b.EsTrasbordo);
 
-            var viajesHoy = tarjeta.Boletos.Count(b => b.Fecha.Date == fechaActual.Date);
-            if (viajesHoy >= 2)
-            {
-                coeficiente = 1m;
-            }
-        }
-
-        var esBoletoGratuito = tipoNombre == "BoletoGratuitoEstudiantil";
-
-        if (esBoletoGratuito)
-        {
-            var viajesGratisHoy = tarjeta.Boletos
-                .Count(b => b.Fecha.Date == fechaActual.Date && b.Monto == 0m);
-
-            if (viajesGratisHoy >= 2)
-            {
-                coeficiente = 1m;
+                if (primerBoletoCadena != null && (fechaActual - primerBoletoCadena.Fecha).TotalHours <= 1.0)
+                {
+                    esTrasbordo = true;
+                }
             }
         }
 
-        if (tipoNombre == "Normal")
+        if (esTrasbordo)
         {
-            var viajesMes = tarjeta.Boletos.Count(b => b.Fecha.Year == fechaActual.Year && b.Fecha.Month == fechaActual.Month);
-            var numeroViaje = viajesMes + 1;
+            coeficiente = 0m;
+        }
+        else
+        {
+            if (esMedioBoleto)
+            {
+                var ultimoBoletoViaje = tarjeta.Boletos.OrderByDescending(b => b.Fecha).FirstOrDefault();
+                if (ultimoBoletoViaje != null && (fechaActual - ultimoBoletoViaje.Fecha).TotalMinutes < 5)
+                {
+                    return null;
+                }
 
-            if (numeroViaje >= 80)
-                coeficiente *= 0.75m;
-            else if (numeroViaje >= 30)
-                coeficiente *= 0.80m;
+                var viajesHoy = tarjeta.Boletos.Count(b => b.Fecha.Date == fechaActual.Date);
+                if (viajesHoy >= 2)
+                {
+                    coeficiente = 1m;
+                }
+            }
+
+            var esBoletoGratuito = tipoNombre == "BoletoGratuitoEstudiantil";
+
+            if (esBoletoGratuito)
+            {
+                var viajesGratisHoy = tarjeta.Boletos
+                    .Count(b => b.Fecha.Date == fechaActual.Date && b.Monto == 0m);
+
+                if (viajesGratisHoy >= 2)
+                {
+                    coeficiente = 1m;
+                }
+            }
+
+            if (tipoNombre == "Normal")
+            {
+                var viajesMes = tarjeta.Boletos.Count(b => b.Fecha.Year == fechaActual.Year && b.Fecha.Month == fechaActual.Month);
+                var numeroViaje = viajesMes + 1;
+
+                if (numeroViaje >= 80)
+                    coeficiente *= 0.75m;
+                else if (numeroViaje >= 30)
+                    coeficiente *= 0.80m;
+            }
         }
 
         var tarifaBase = EsInterurbana ? 3000m : _tarifa;
@@ -128,7 +157,8 @@ public class Colectivo
             Monto = montoBase,
             SaldoRestante = tarjeta.Saldo,
             TotalAbonado = totalAbonado,
-            Fecha = fechaActual
+            Fecha = fechaActual,
+            EsTrasbordo = esTrasbordo
         };
 
         tarjeta.Boletos.Add(boleto);
